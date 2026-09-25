@@ -11,22 +11,13 @@ export function GroupCard({ group }: { group: Group }) {
         <Icon name={group.icon} />
       </span>
       <span className="group-card__content">
-        <span className="group-card__category">{group.category}</span>
         <span className="group-card__name">{group.name}</span>
         <span className="group-card__description">{group.description}</span>
         <span className="group-card__cta">
-          {available ? (
-            <>
-              <Icon name="whatsapp" /> Entrar no grupo <Icon name="arrow" />
-            </>
-          ) : (
-            'Em breve no WhatsApp'
-          )}
+          {available ? 'Entrar no grupo' : 'Em breve no WhatsApp'}
         </span>
       </span>
-      <span className="group-card__arrow">
-        <Icon name={available ? 'arrow' : 'gem'} />
-      </span>
+      {available && <Icon name="arrow" className="group-card__arrow" />}
     </>
   )
 

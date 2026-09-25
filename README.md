@@ -46,7 +46,6 @@ Para adicionar um grupo, acrescente um objeto à lista:
   id: 'games',
   name: 'Garimpo Games',
   description: 'Jogos, consoles e acessórios para jogar mais.',
-  category: 'Games & consoles',
   icon: 'tech',
   tone: 'blue',
   href: '', // Cole aqui o convite oficial completo.
@@ -54,12 +53,13 @@ Para adicionar um grupo, acrescente um objeto à lista:
 ```
 
 - `id`: único e estável; identifica o grupo nos eventos.
-- `name`, `description`, `category`: textos exibidos. Prefira descrições de uma frase.
+- `name`: nome exibido em todos os tamanhos de tela.
+- `description`: descrição curta exibida no desktop; no mobile, ficam apenas nome e ação.
 - `icon`: `bag`, `tech` ou `sparkles`.
 - `tone`: `orange`, `blue` ou `rose`.
 - `href`: convite HTTPS de `chat.whatsapp.com`.
 
-A ordem da lista define a ordem na página. Remova um objeto para remover um grupo. Lista, contagem e layout se adaptam sem alterações nos componentes. Mais grupos aumentam naturalmente a rolagem. Os convites abrem na mesma aba, preservando o fluxo dos navegadores internos das redes sociais.
+A ordem da lista define a ordem na página. Remova um objeto para remover um grupo. Lista e layout se adaptam sem alterações nos componentes. Mais grupos aumentam naturalmente a rolagem. Os convites abrem na mesma aba, preservando o fluxo dos navegadores internos das redes sociais.
 
 Execute novamente o build após alterações. Se mudar os grupos ou a identidade, regenere também a imagem social.
 
@@ -86,7 +86,7 @@ tests/              testes de navegador e fixtures isoladas
 
 Fundo marfim, texto escuro e laranja queimado como assinatura. A marca em SVG remete a um achado. As cores dos grupos ajudam a distinguir categorias, sem serem a única forma de identificação.
 
-No celular, a ordem é marca, promessa curta e grupos. No desktop, a introdução e a lista dividem a largura disponível. O card inteiro é um link, com área de toque ampla, nome acessível, foco visível e feedback de interação. Não há navegação intermediária, contagem fictícia de participantes ou urgência artificial.
+No celular, a ordem é marca, frase principal, uma linha sobre ofertas no WhatsApp e três botões de grupo. Cada opção tem fundo preenchido, nome legível, “Entrar no grupo” e seta. Descrições, selos e frases de apoio foram retirados do mobile para antecipar a escolha. No desktop, a introdução e a lista dividem a largura disponível, e os grupos também exibem uma descrição curta. Cada botão é um único link, com área de toque ampla, nome acessível, foco visível e feedback de interação. Não há navegação intermediária, contagem fictícia de participantes ou urgência artificial.
 
 O conteúdo principal chega no HTML inicial. Mesmo sem JavaScript, os convites configurados continuam navegáveis. A hidratação acrescenta os eventos; os estilos atendem `prefers-reduced-motion`. Não há animações automáticas nem requisições externas de fontes.
 

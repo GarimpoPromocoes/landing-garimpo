@@ -1,10 +1,6 @@
-export function Brand({ compact = false }: { compact?: boolean }) {
+export function Brand() {
   return (
-    <span
-      className={`brand${compact ? ' brand--compact' : ''}`}
-      role="img"
-      aria-label="Garimpo Promoções"
-    >
+    <span className="brand" role="img" aria-label="Garimpo Promoções">
       <svg
         className="brand__mark"
         width="42"
@@ -25,7 +21,7 @@ export function Brand({ compact = false }: { compact?: boolean }) {
         <span className="brand__name">
           garimpo<span className="brand__dot">.</span>
         </span>
-        {!compact && <span className="brand__descriptor">promoções</span>}
+        <span className="brand__descriptor">promoções</span>
       </span>
     </span>
   )
