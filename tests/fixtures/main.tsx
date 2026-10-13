@@ -4,10 +4,11 @@ import { groups } from '../../src/data/groups'
 import { trackEvent } from '../../src/lib/analytics'
 import '../../src/styles.css'
 
-// Convites sintéticos SOMENTE no ambiente de teste; nunca integram o build.
+// Convites e contagem de membros sintéticos SOMENTE no ambiente de teste; nunca integram o build.
 const fixtureGroups = groups.map((group, index) => ({
   ...group,
   href: `https://chat.whatsapp.com/TESTONLY${String(index).padStart(14, '0')}`,
+  members: index === 0 ? 812 : undefined,
 }))
 createRoot(document.getElementById('root')!).render(
   <main style={{ maxWidth: 560, padding: 24, margin: 'auto' }}>

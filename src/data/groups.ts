@@ -7,6 +7,8 @@ export type Group = {
   tone: 'orange' | 'blue' | 'rose'
   /** Convite oficial https://chat.whatsapp.com/…; vazio exibe “Em breve”. */
   href: string
+  /** Participantes atuais. Opcional: com o valor real, o card mostra as vagas restantes. */
+  members?: number
 }
 
 export const groups: readonly Group[] = [

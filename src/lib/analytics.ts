@@ -2,7 +2,13 @@ export type AnalyticsEvent =
   | { name: 'page_view'; properties: { page: '/' } }
   | {
       name: 'group_click'
-      properties: { group_id: string; group_name: string; destination: 'whatsapp' }
+      properties: {
+        group_id: string
+        group_name: string
+        destination: 'whatsapp'
+        /** Onde estava o link: na lista de grupos ou no convite final da página. */
+        source: 'list' | 'closing'
+      }
     }
 
 /** Ponto único de integração. Sem cookies, rede ou dados pessoais por padrão. */

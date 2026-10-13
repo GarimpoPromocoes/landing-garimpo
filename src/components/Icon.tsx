@@ -1,4 +1,4 @@
-type IconName = 'bag' | 'tech' | 'sparkles' | 'arrow'
+type IconName = 'bag' | 'tech' | 'sparkles' | 'arrow' | 'check'
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
   return (
@@ -31,6 +31,7 @@ export function Icon({ name, className }: { name: IconName; className?: string }
         <path d="m10 3 2.2 6.8L19 12l-6.8 2.2L10 21l-2.2-6.8L1 12l6.8-2.2L10 3Zm9-1 .9 2.1L22 5l-2.1.9L19 8l-.9-2.1L16 5l2.1-.9L19 2Z" />
       )}
       {name === 'arrow' && <path d="M5 12h14m-6-6 6 6-6 6" />}
+      {name === 'check' && <path d="m5 12.5 4.5 4.5L19 7.5" />}
     </svg>
   )
 }

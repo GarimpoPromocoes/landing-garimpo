@@ -63,18 +63,38 @@ A ordem da lista define a ordem na página. Remova um objeto para remover um gru
 
 Execute novamente o build após alterações. Se mudar os grupos ou a identidade, regenere também a imagem social.
 
+### Vagas restantes (opcional)
+
+Grupos do WhatsApp têm limite de participantes, e a página já avisa isso com o selo “Vagas limitadas”. Para mostrar também a barra de vagas de um grupo, informe o número **real** de participantes (visível nas informações do grupo no WhatsApp):
+
+```ts
+{ id: 'general', /* … */ members: 812 }
+```
+
+O card passa a exibir “212 vagas restantes” e uma barra de preenchimento, calculados com `groupCapacity` em [src/data/site.ts](src/data/site.ts). Confira esse limite no WhatsApp antes de usar. Sem `members`, nenhuma contagem aparece. Lembre-se de atualizar o número a cada build; um valor desatualizado vira urgência falsa.
+
+## Promoções de exemplo
+
+A seção “O que chega no seu WhatsApp” vem de [src/data/promos.ts](src/data/promos.ts). Cada oferta informa `name`, `image`, `from` (preço anterior), `price`, `groupId` e, se houver, `coupon`. O percentual de desconto e a economia em reais são calculados a partir dos dois preços.
+
+- Imagens ficam em `public/promos/` (cerca de 240 px de largura bastam; o card as exibe a até 120 px).
+- Use nomes curtos; o título é limitado a duas linhas.
+- Os cards não são links: são exemplos do que chega no grupo, e o aviso abaixo da lista lembra que preços e cupons mudam. Troque os exemplos de tempos em tempos e mantenha só ofertas que realmente passaram pelos grupos.
+- Para ocultar a seção, deixe a lista vazia.
+
 ## Organização
 
 ```text
 src/
-  components/       Brand, Icon e GroupCard
-  data/             grupos e metadados da marca
-  lib/              eventos de analytics e validação de convites
+  components/       Brand, Icon, GroupCard, PromoCard e ClosingCta
+  data/             grupos, promoções de exemplo e metadados da marca
+  lib/              analytics, validação de convites e formatação de preços
   App.tsx           composição da página
   main.tsx          renderização/hidratação e visita
   styles.css        identidade visual e responsividade
 public/
   fonts/            DM Sans local e licença OFL
+  promos/           miniaturas das promoções de exemplo
   favicon.svg
   apple-touch-icon.png
   og-image.png      imagem social de 1200 × 630
@@ -86,7 +106,14 @@ tests/              testes de navegador e fixtures isoladas
 
 Fundo marfim, texto escuro e laranja queimado como assinatura. A marca em SVG remete a um achado. As cores dos grupos ajudam a distinguir categorias, sem serem a única forma de identificação.
 
-No celular, a ordem é marca, frase principal, uma linha sobre ofertas no WhatsApp e três botões de grupo. Cada opção tem fundo preenchido, nome legível, “Entrar no grupo” e seta. Descrições, selos e frases de apoio foram retirados do mobile para antecipar a escolha. No desktop, a introdução e a lista dividem a largura disponível, e os grupos também exibem uma descrição curta. Cada botão é um único link, com área de toque ampla, nome acessível, foco visível e feedback de interação. Não há navegação intermediária, contagem fictícia de participantes ou urgência artificial.
+No celular, a ordem é marca, frase principal, uma linha sobre ofertas no WhatsApp e três botões de grupo. Cada opção tem fundo preenchido, nome legível, “Entrar no grupo” e seta. Descrições, selos e frases de apoio foram retirados do mobile para antecipar a escolha. No desktop, a introdução e a lista dividem a largura disponível, e os grupos também exibem uma descrição curta. Cada botão é um único link, com área de toque ampla, nome acessível, foco visível e feedback de interação. Não há navegação intermediária.
+
+Abaixo dos grupos, a página reforça a decisão sem mexer no primeiro contato (os três grupos continuam visíveis sem rolagem no celular):
+
+- **Escassez real**: selo “Vagas limitadas” e o aviso de que o convite fecha quando o grupo lota, que é uma limitação concreta do WhatsApp. Contagens só aparecem com números reais informados em `members`; não há contador fictício nem cronômetro.
+- **Prova do que se recebe**: duas ofertas de exemplo com preço anterior, preço atual, desconto, economia e cupom, no formato das mensagens dos grupos.
+- **Urgência de contexto**: “Ofertas boas acabam rápido. Quem está no grupo vê primeiro.”
+- **Convite final** em painel escuro, com botão para o primeiro grupo ativo, atalho para escolher outro e as garantias “100% grátis”, “Sem cadastro” e “Saia quando quiser”.
 
 O conteúdo principal chega no HTML inicial. Mesmo sem JavaScript, os convites configurados continuam navegáveis. A hidratação acrescenta os eventos; os estilos atendem `prefers-reduced-motion`. Não há animações automáticas nem requisições externas de fontes.
 
@@ -94,10 +121,12 @@ O conteúdo principal chega no HTML inicial. Mesmo sem JavaScript, os convites c
 
 [src/lib/analytics.ts](src/lib/analytics.ts) é o ponto único de integração. São emitidos eventos DOM `garimpo:analytics`:
 
-| Evento        | Propriedades                                        |
-| ------------- | --------------------------------------------------- |
-| `page_view`   | `page: '/'`                                         |
-| `group_click` | `group_id`, `group_name`, `destination: 'whatsapp'` |
+| Evento        | Propriedades                                                                       |
+| ------------- | ---------------------------------------------------------------------------------- |
+| `page_view`   | `page: '/'`                                                                        |
+| `group_click` | `group_id`, `group_name`, `destination: 'whatsapp'`, `source: 'list' \| 'closing'` |
+
+`source` indica se o clique veio da lista de grupos ou do convite final, o que permite medir quanto a seção de promoções e o fechamento acrescentam à conversão.
 
 É possível integrar GA, Plausible, PostHog ou Meta diretamente em `trackEvent`, ou instalar um listener **antes de a aplicação iniciar**. Exemplo de listener em um módulo importado antes de `main.tsx`:
 
@@ -145,7 +174,7 @@ npm run test:e2e
 npm run check:production
 ```
 
-Os testes verificam acessibilidade com axe, navegação por teclado, movimento reduzido, ausência de erros no console, assets, HTML sem JavaScript e larguras de 320 a 1920 px. CTAs e eventos são testados com convites sintéticos em `tests/fixtures/`, fora do build. A navegação desses convites é interceptada; nenhum convite fictício é publicado.
+Os testes verificam acessibilidade com axe, navegação por teclado, movimento reduzido, ausência de erros no console, assets, HTML sem JavaScript, larguras de 320 a 1920 px, a seção de promoções (preços, desconto, cupom e imagens), o aviso de vagas e a origem dos cliques. CTAs e eventos são testados com convites sintéticos em `tests/fixtures/`, fora do build. A navegação desses convites é interceptada; nenhum convite fictício é publicado.
 
 `check:production` falha de propósito enquanto faltar domínio ou convite. Não confunda o sucesso do build de desenvolvimento com a liberação para publicação.
 
