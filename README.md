@@ -54,7 +54,7 @@ Para adicionar um grupo, acrescente um objeto à lista:
 
 - `id`: único e estável; identifica o grupo nos eventos.
 - `name`: nome exibido em todos os tamanhos de tela.
-- `description`: descrição curta exibida no desktop; no mobile, ficam apenas nome e ação.
+- `description`: descrição curta, exibida no card em todos os tamanhos de tela.
 - `icon`: `bag`, `tech` ou `sparkles`.
 - `tone`: `orange`, `blue` ou `rose`.
 - `href`: convite HTTPS de `chat.whatsapp.com`.
@@ -65,7 +65,7 @@ Execute novamente o build após alterações. Se mudar os grupos ou a identidade
 
 ### Vagas restantes (opcional)
 
-Grupos do WhatsApp têm limite de participantes, e a página já avisa isso com o selo “Vagas limitadas”. Para mostrar também a barra de vagas de um grupo, informe o número **real** de participantes (visível nas informações do grupo no WhatsApp):
+Grupos do WhatsApp têm limite de participantes. Para mostrar a barra de vagas de um grupo, informe o número **real** de participantes (visível nas informações do grupo no WhatsApp):
 
 ```ts
 { id: 'general', /* … */ members: 812 }
@@ -75,26 +75,28 @@ O card passa a exibir “212 vagas restantes” e uma barra de preenchimento, ca
 
 ## Promoções de exemplo
 
-A seção “O que chega no seu WhatsApp” vem de [src/data/promos.ts](src/data/promos.ts). Cada oferta informa `name`, `image`, `from` (preço anterior), `price`, `groupId` e, se houver, `coupon`. O percentual de desconto e a economia em reais são calculados a partir dos dois preços.
+A seção “O que te espera lá dentro” vem de [src/data/promos.ts](src/data/promos.ts). Cada oferta informa `name`, `image`, `from` (preço anterior), `price`, `groupId` e, se houver, `coupon`. O percentual de desconto é calculado a partir dos dois preços.
 
-- Imagens ficam em `public/promos/` (cerca de 240 px de largura bastam; o card as exibe a até 120 px).
-- Use nomes curtos; o título é limitado a duas linhas.
-- Os cards não são links: são exemplos do que chega no grupo, e o aviso abaixo da lista lembra que preços e cupons mudam. Troque os exemplos de tempos em tempos e mantenha só ofertas que realmente passaram pelos grupos.
+- A **primeira** oferta da lista aparece na mensagem do celular, com nome, preço, preço anterior, desconto e cupom. As demais ficam guardadas para quando você trocar a ordem.
+- Imagens ficam em `public/promos/` (cerca de 240 px de largura bastam).
+- Use nomes curtos; o nome aparece na mensagem do celular.
+- A mensagem não é um link: é um exemplo do que chega no grupo, e o aviso abaixo lembra que preços e cupons mudam. Troque o exemplo de tempos em tempos e use só ofertas que realmente passaram pelos grupos.
 - Para ocultar a seção, deixe a lista vazia.
 
 ## Organização
 
 ```text
 src/
-  components/       Brand, Icon, GroupCard, PromoCard e ClosingCta
+  components/       Brand, Icon, Hero, JoinButton, Showcase, GroupCard, Reasons e ClosingCta
   data/             grupos, promoções de exemplo e metadados da marca
   lib/              analytics, validação de convites e formatação de preços
   App.tsx           composição da página
   main.tsx          renderização/hidratação e visita
   styles.css        identidade visual e responsividade
 public/
+  art/              logo, mascote (topo, rodapé e avatar) e foto do depoimento, em WebP
   fonts/            DM Sans local e licença OFL
-  promos/           miniaturas das promoções de exemplo
+  promos/           imagens das promoções de exemplo
   favicon.svg
   apple-touch-icon.png
   og-image.png      imagem social de 1200 × 630
@@ -104,16 +106,17 @@ tests/              testes de navegador e fixtures isoladas
 
 ## Design e experiência
 
-Fundo marfim, texto escuro e laranja queimado como assinatura. A marca em SVG remete a um achado. As cores dos grupos ajudam a distinguir categorias, sem serem a única forma de identificação.
+Fundo escuro com brilho dourado, títulos com destaque em dourado e botões verdes de WhatsApp. A mascote mineradora aparece no topo e no convite final. As cores dos grupos (laranja, azul e rosa) ajudam a distinguir categorias, sem serem a única forma de identificação.
 
-No celular, a ordem é marca, frase principal, uma linha sobre ofertas no WhatsApp e três botões de grupo. Cada opção tem fundo preenchido, nome legível, “Entrar no grupo” e seta. Descrições, selos e frases de apoio foram retirados do mobile para antecipar a escolha. No desktop, a introdução e a lista dividem a largura disponível, e os grupos também exibem uma descrição curta. Cada botão é um único link, com área de toque ampla, nome acessível, foco visível e feedback de interação. Não há navegação intermediária.
+Ordem da página, igual no celular e no desktop:
 
-Abaixo dos grupos, a página reforça a decisão sem mexer no primeiro contato (os três grupos continuam visíveis sem rolagem no celular):
+1. **Topo**: logo, mascote, “Achados reais. Preços baixos.”, botão verde para o primeiro grupo ativo e “Ver grupos”, que rola até a lista.
+2. **O que te espera lá dentro**: celular com uma oferta real no formato das mensagens do grupo e o balão “Achados como esse todos os dias no grupo!”.
+3. **Escolha seu grupo**: um card por grupo. No celular, cards em linha com ícone, nome, descrição e seta; no desktop, três colunas com o botão “Entrar agora”.
+4. **Por que entrar?**: descontos reais, sem enrolação e grupos ativos.
+5. **Entre agora e aproveite**: mascote apontando e o botão verde.
 
-- **Escassez real**: selo “Vagas limitadas” e o aviso de que o convite fecha quando o grupo lota, que é uma limitação concreta do WhatsApp. Contagens só aparecem com números reais informados em `members`; não há contador fictício nem cronômetro.
-- **Prova do que se recebe**: duas ofertas de exemplo com preço anterior, preço atual, desconto, economia e cupom, no formato das mensagens dos grupos.
-- **Urgência de contexto**: “Ofertas boas acabam rápido. Quem está no grupo vê primeiro.”
-- **Convite final** em painel escuro, com botão para o primeiro grupo ativo, atalho para escolher outro e as garantias “100% grátis”, “Sem cadastro” e “Saia quando quiser”.
+O celular, os ícones, os cards e os botões são feitos em código. Apenas logo, mascote e foto são imagens, em `public/art/`. Para trocar uma arte, substitua o arquivo mantendo o nome. Se as proporções mudarem, ajuste `width` e `height` nos componentes. As artes atuais são recortes pequenos (a mascote do topo tem 339 px de largura) e ficam um pouco suaves em telas de alta densidade. Versões maiores melhoram a nitidez sem mexer no código.
 
 O conteúdo principal chega no HTML inicial. Mesmo sem JavaScript, os convites configurados continuam navegáveis. A hidratação acrescenta os eventos; os estilos atendem `prefers-reduced-motion`. Não há animações automáticas nem requisições externas de fontes.
 
@@ -131,12 +134,12 @@ No plano Hobby, o painel mostra apenas visitas. Eventos personalizados, como `gr
 
 [src/lib/analytics.ts](src/lib/analytics.ts) é o ponto único de integração. São emitidos eventos DOM `garimpo:analytics`:
 
-| Evento        | Propriedades                                                                       |
-| ------------- | ---------------------------------------------------------------------------------- |
-| `page_view`   | `page: '/'`                                                                        |
-| `group_click` | `group_id`, `group_name`, `destination: 'whatsapp'`, `source: 'list' \| 'closing'` |
+| Evento        | Propriedades                                                                                 |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| `page_view`   | `page: '/'`                                                                                  |
+| `group_click` | `group_id`, `group_name`, `destination: 'whatsapp'`, `source: 'hero' \| 'list' \| 'closing'` |
 
-`source` indica se o clique veio da lista de grupos ou do convite final, o que permite medir quanto a seção de promoções e o fechamento acrescentam à conversão.
+`source` indica se o clique veio do botão do topo, da lista de grupos ou do convite final.
 
 É possível integrar GA, Plausible, PostHog ou Meta diretamente em `trackEvent`, ou instalar um listener **antes de a aplicação iniciar**. Exemplo de listener em um módulo importado antes de `main.tsx`:
 
@@ -184,7 +187,7 @@ npm run test:e2e
 npm run check:production
 ```
 
-Os testes verificam acessibilidade com axe, navegação por teclado, movimento reduzido, ausência de erros no console, assets, HTML sem JavaScript, larguras de 320 a 1920 px, a seção de promoções (preços, desconto, cupom e imagens), o aviso de vagas e a origem dos cliques. CTAs e eventos são testados com convites sintéticos em `tests/fixtures/`, fora do build. A navegação desses convites é interceptada; nenhum convite fictício é publicado.
+Os testes verificam acessibilidade com axe, navegação por teclado, movimento reduzido, ausência de erros no console, assets, HTML sem JavaScript, larguras de 320 a 1920 px, a seção de promoções (desconto, preços, cupom e imagens), a barra de vagas e a origem dos cliques. CTAs e eventos são testados com convites sintéticos em `tests/fixtures/`, fora do build. A navegação desses convites é interceptada; nenhum convite fictício é publicado.
 
 `check:production` falha de propósito enquanto faltar domínio ou convite. Não confunda o sucesso do build de desenvolvimento com a liberação para publicação.
 

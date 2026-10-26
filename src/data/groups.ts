@@ -15,7 +15,7 @@ export const groups: readonly Group[] = [
   {
     id: 'general',
     name: 'Garimpo Geral',
-    description: 'De tudo um pouco. Sempre um bom achado.',
+    description: 'As melhores ofertas do dia.',
     icon: 'bag',
     tone: 'orange',
     href: 'https://chat.whatsapp.com/E9FiTDLO95UBvfmKQW4sDx',
@@ -23,7 +23,7 @@ export const groups: readonly Group[] = [
   {
     id: 'tech',
     name: 'Garimpo Tech',
-    description: 'Tecnologia, eletrônicos e seu próximo upgrade.',
+    description: 'Eletrônicos, acessórios e gadgets.',
     icon: 'tech',
     tone: 'blue',
     href: 'https://chat.whatsapp.com/DKYK7eWZ4GF5iMpo8ErPpa',
@@ -31,7 +31,7 @@ export const groups: readonly Group[] = [
   {
     id: 'feminine',
     name: 'Garimpo Feminino',
-    description: 'Moda, beleza e cuidados para o seu dia a dia.',
+    description: 'Moda, beleza e autocuidado.',
     icon: 'sparkles',
     tone: 'rose',
     href: 'https://chat.whatsapp.com/G00K8tY7DsI3Jg24PATjn8',

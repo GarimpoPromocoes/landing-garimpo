@@ -24,9 +24,6 @@ export function GroupCard({ group }: { group: Group }) {
       <span className="group-card__content">
         <span className="group-card__name">{group.name}</span>
         <span className="group-card__description">{group.description}</span>
-        <span className="group-card__cta">
-          {available ? 'Entrar no grupo' : 'Em breve no WhatsApp'}
-        </span>
         {spots && (
           <span className="group-card__spots">
             <span className="group-card__spots-label">{spots.label}</span>
@@ -36,7 +33,19 @@ export function GroupCard({ group }: { group: Group }) {
           </span>
         )}
       </span>
-      {available && <Icon name="arrow" className="group-card__arrow" />}
+      {available ? (
+        <>
+          <span className="group-card__arrow">
+            <Icon name="arrow" />
+          </span>
+          <span className="group-card__cta">
+            <Icon name="users" />
+            Entrar agora
+          </span>
+        </>
+      ) : (
+        <span className="group-card__soon">Em breve no WhatsApp</span>
+      )}
     </>
   )
 

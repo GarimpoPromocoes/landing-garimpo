@@ -16,8 +16,8 @@ export type AnalyticsEvent =
         group_id: string
         group_name: string
         destination: 'whatsapp'
-        /** Onde estava o link: na lista de grupos ou no convite final da página. */
-        source: 'list' | 'closing'
+        /** Onde estava o link: botão do topo, lista de grupos ou convite final. */
+        source: 'hero' | 'list' | 'closing'
       }
     }
 

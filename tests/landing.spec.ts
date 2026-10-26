@@ -40,9 +40,7 @@ test('página sem erros, com estrutura acessível e assets locais', async ({ pag
   })
   await page.goto('/')
   await page.evaluate(() => document.fonts.ready)
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'A gente garimpa.Você economiza.',
-  )
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Achados reais.Preços baixos.')
   await expect(page.locator('.group-card')).toHaveCount(groups.length)
   const result = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
@@ -71,19 +69,19 @@ test('layout não transborda entre 320 e 1920 px', async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
     await page.goto('/')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-    for (const card of await page.locator('.group-card, .promo-card').all()) {
+    for (const card of await page.locator('.group-card, .reason').all()) {
       const box = await card.boundingBox()
-      expect(box!.width).toBeGreaterThan(250)
+      expect(box!.width).toBeGreaterThan(200)
       expect(box!.height).toBeGreaterThanOrEqual(44)
     }
   }
 })
 
-test('os três grupos aparecem sem rolagem em um celular de 390 × 844', async ({ page }) => {
+test('botões do topo aparecem sem rolagem em um celular de 390 × 844', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   await page.evaluate(() => document.fonts.ready)
-  const box = await page.locator('.group-card').last().boundingBox()
+  const box = await page.locator('.hero .ghost-button').boundingBox()
   expect(box!.y + box!.height).toBeLessThanOrEqual(844)
 })
 
@@ -93,7 +91,7 @@ test('HTML pré-renderizado permanece legível sem JavaScript', async ({ browser
   await page.goto('http://127.0.0.1:4173')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   await expect(page.locator('.group-card')).toHaveCount(groups.length)
-  await expect(page.locator('.promo-card')).toHaveCount(promos.length)
+  await expect(page.locator('.message__name')).toHaveText(promos[0].name)
   await context.close()
 })
 
@@ -125,6 +123,11 @@ test('metadados, imagem social e ícones existem no HTML inicial', async ({ requ
     '/favicon.svg',
     '/apple-touch-icon.png',
     '/fonts/dm-sans-latin.woff2',
+    '/art/logo.webp',
+    '/art/mascote-hero.webp',
+    '/art/mascote-cta.webp',
+    '/art/achados.webp',
+    '/art/avatar.webp',
     '/robots.txt',
   ]) {
     expect((await request.get(path)).ok()).toBe(true)
@@ -169,10 +172,8 @@ test('cards ativos têm contraste e nomes acessíveis', async ({ page }) => {
   expect(result.violations).toEqual([])
 })
 
-test('vagas limitadas: selo, aviso honesto e barra só com contagem real', async ({ page }) => {
+test('vagas: barra só aparece com contagem real', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('.badge')).toHaveText('Vagas limitadas')
-  await expect(page.locator('.groups-note')).toContainText('Quando lota, o convite fecha.')
   // Sem `members` em groups.ts, a página não exibe contagem alguma.
   const configured = groups.filter((group) => group.members !== undefined).length
   await expect(page.locator('.group-card__spots')).toHaveCount(configured)
@@ -184,25 +185,22 @@ test('vagas limitadas: selo, aviso honesto e barra só com contagem real', async
   await expect(cards.nth(1).locator('.group-card__spots')).toHaveCount(0)
 })
 
-test('promoções exibem preço, desconto, economia e cupom a partir dos dados', async ({ page }) => {
+test('celular mostra a primeira oferta de promos.ts, com resumo acessível', async ({ page }) => {
   await page.goto('/')
-  const cards = page.locator('.promo-card')
-  await expect(cards).toHaveCount(promos.length)
-  for (const promo of promos) {
-    const card = cards.filter({ hasText: promo.name })
-    await expect(card).toContainText(formatBRL(promo.price))
-    await expect(card).toContainText(formatBRL(promo.from))
-    await expect(card).toContainText(`-${discountPercent(promo.from, promo.price)}%`)
-    await expect(card).toContainText(`Economize ${formatBRL(promo.from - promo.price)}`)
-    if (promo.coupon) await expect(card).toContainText(`Cupom ${promo.coupon}`)
-    else await expect(card.locator('.promo-card__coupon')).toHaveCount(0)
-  }
-  await expect(page.locator('.deals__note')).toContainText('Preços e cupons mudam rápido')
+  const promo = promos[0]
+  const discount = `${discountPercent(promo.from, promo.price)}%`
+  await expect(page.locator('.message__name')).toHaveText(promo.name)
+  await expect(page.locator('.message__prices')).toContainText(formatBRL(promo.price))
+  await expect(page.locator('.message__prices')).toContainText(formatBRL(promo.from))
+  await expect(page.locator('.message .discount')).toHaveText(`-${discount}`)
+  const phone = page.getByRole('img', { name: /^Exemplo de mensagem do grupo/ })
+  await expect(phone).toHaveAttribute('aria-label', new RegExp(`${discount} de desconto`))
+  await expect(page.locator('.showcase__note')).toContainText('Preços e cupons mudam rápido')
 })
 
-test('imagens das promoções carregam', async ({ page }) => {
+test('imagens da página carregam', async ({ page }) => {
   await page.goto('/')
-  for (const image of await page.locator('.promo-card__image').all()) {
+  for (const image of await page.locator('img').all()) {
     await image.scrollIntoViewIfNeeded()
     await expect
       .poll(() => image.evaluate((el: HTMLImageElement) => el.naturalWidth))
@@ -210,21 +208,27 @@ test('imagens das promoções carregam', async ({ page }) => {
   }
 })
 
-test('convite final leva ao primeiro grupo ativo e registra a origem', async ({ page }) => {
+test('botões verdes levam ao primeiro grupo ativo e registram a origem', async ({ page }) => {
   const events = await recordAnalytics(page)
   const target = groups.find((group) => isWhatsAppInvite(group.href))!
-  await page.goto('/')
-  for (const perk of ['100% grátis', 'Sem cadastro', 'Saia quando quiser']) {
-    await expect(page.locator('.closing__perks')).toContainText(perk)
+  const name = `Entrar no grupo: ${target.name}`
+  for (const [section, source] of [
+    ['.hero', 'hero'],
+    ['.closing', 'closing'],
+  ] as const) {
+    await page.goto('/')
+    const cta = page.locator(section).getByRole('link', { name, exact: true })
+    await expect(cta).toHaveAttribute('href', target.href)
+    await cta.click()
+    await expect(page).toHaveURL(/^https:\/\/chat\.whatsapp\.com\//)
+    await expect
+      .poll(() => events.filter((event) => event.name === 'group_click').at(-1)?.properties)
+      .toMatchObject({ group_id: target.id, source })
   }
-  await page.getByRole('link', { name: 'Escolher outro grupo' }).click()
-  await expect(page.locator('#grupos')).toBeFocused()
+})
 
-  const cta = page.getByRole('link', { name: `Entrar no ${target.name}`, exact: true })
-  await expect(cta).toHaveAttribute('href', target.href)
-  await cta.click()
-  await expect(page).toHaveURL(/^https:\/\/chat\.whatsapp\.com\//)
-  await expect
-    .poll(() => events.find((event) => event.name === 'group_click')?.properties)
-    .toMatchObject({ group_id: target.id, source: 'closing' })
+test('"Ver grupos" leva à lista de grupos', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('link', { name: 'Ver grupos' }).click()
+  await expect(page.locator('#grupos')).toBeFocused()
 })
