@@ -119,6 +119,16 @@ O conteúdo principal chega no HTML inicial. Mesmo sem JavaScript, os convites c
 
 ## Analytics
 
+### Vercel Web Analytics
+
+O pacote `@vercel/analytics` mede visitas, visitantes, páginas, origem do tráfego, país, navegador e dispositivo, sem cookies. O script é injetado apenas em builds feitos na Vercel (`VERCEL=1`). Localmente e nos testes, nada é carregado.
+
+Para ativar: no painel da Vercel, abra o projeto, entre em **Analytics** e clique em **Enable**. Depois, faça um novo deploy. Os dados aparecem na mesma aba após as primeiras visitas. Bloqueadores de anúncio podem impedir parte da contagem.
+
+No plano Hobby, o painel mostra apenas visitas. Eventos personalizados, como `group_click`, exigem o plano Pro e por isso não são enviados à Vercel.
+
+### Eventos internos
+
 [src/lib/analytics.ts](src/lib/analytics.ts) é o ponto único de integração. São emitidos eventos DOM `garimpo:analytics`:
 
 | Evento        | Propriedades                                                                       |
@@ -141,7 +151,7 @@ window.addEventListener('garimpo:analytics', (event) => {
 
 Para links externos, use o mecanismo de transporte apropriado do provedor, como beacon, para preservar o evento durante a navegação. Não aguarde uma requisição nem bloqueie a entrada no WhatsApp.
 
-A conversão por grupo pode ser calculada como cliques/visitas. O clique mede a intenção de entrada; esta página não confirma a participação dentro do WhatsApp. Não há cookies, armazenamento ou envio de analytics por padrão. Ajuste os avisos de privacidade quando integrar um provedor.
+A conversão por grupo pode ser calculada como cliques/visitas. O clique mede a intenção de entrada; esta página não confirma a participação dentro do WhatsApp. Os eventos `garimpo:analytics` não usam cookies, armazenamento nem rede. Ajuste os avisos de privacidade quando integrar outro provedor.
 
 ## SEO e compartilhamento
 
@@ -195,5 +205,27 @@ Na Vercel, Netlify ou outra hospedagem estática, conecte o repositório e confi
 Para um preview sem domínio de produção, use somente `npm run build` e deixe a variável do domínio vazia. Publique na raiz de um domínio ou subdomínio; esta configuração não é destinada a subpastas.
 
 Depois de vincular o domínio e ativar HTTPS, confira `/robots.txt`, `/sitemap.xml`, `/og-image.png` e os três convites no celular. Use cache longo para `/assets/` (nomes com hash) e revalidação para HTML e assets sem hash. Não é necessário configurar redirecionamentos de SPA, pois existe apenas a rota principal.
+
+## Segurança
+
+O site é estático. Não tem servidor, banco de dados, formulários, login nem segredos no build. `VITE_SITE_URL` é pública. Nunca coloque chaves em variáveis `VITE_*`: o Vite as inclui no JavaScript enviado ao navegador. Só o conteúdo de `dist/` é publicado. Arquivos como `.env`, `.git` e `src/` nunca chegam ao servidor, e qualquer caminho inexistente responde 404.
+
+[vercel.json](vercel.json) aplica a todas as respostas:
+
+| Cabeçalho                    | Efeito                                                                           |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `Content-Security-Policy`    | Só scripts, estilos, imagens, fontes e conexões do próprio domínio; sem iframes. |
+| `Strict-Transport-Security`  | O navegador passa a usar apenas HTTPS.                                           |
+| `X-Frame-Options`            | Impede exibir a página dentro de outro site (clickjacking).                      |
+| `X-Content-Type-Options`     | Impede o navegador de adivinhar o tipo de arquivo.                               |
+| `Referrer-Policy`            | Outros sites recebem só o domínio de origem, sem o caminho.                      |
+| `Cross-Origin-Opener-Policy` | Isola a janela de páginas abertas por outros domínios.                           |
+| `Permissions-Policy`         | Bloqueia câmera, microfone, localização, pagamentos e portas USB/serial.         |
+
+O `vite preview` repete esses cabeçalhos, então os testes E2E falham se a CSP bloquear algo da página. Ao adicionar um script, imagem ou serviço externo, inclua o domínio na diretiva correspondente da CSP. A barra de ferramentas da Vercel nos deploys de preview fica bloqueada pela CSP; isso não afeta a produção.
+
+No painel da Vercel, em **Firewall**, ative a proteção contra bots (**Bot Protection**). Robôs verificados, como Google e o preview de links do WhatsApp, continuam liberados. Em caso de ataque, ative **Attack Challenge Mode** na mesma tela.
+
+`npm run dev` e `npm run preview` escutam em `0.0.0.0`, ou seja, ficam acessíveis a outros aparelhos da mesma rede. Use apenas em redes confiáveis e nunca publique o site com `npm start`. Rode `npm audit` periodicamente.
 
 Referências oficiais: [deploy estático do Vite](https://vite.dev/guide/static-deploy.html), [Vite na Vercel](https://vercel.com/docs/frameworks/frontend/vite) e [Vite na Netlify](https://docs.netlify.com/build/frameworks/framework-setup-guides/vite/).
